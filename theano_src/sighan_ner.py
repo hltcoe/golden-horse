@@ -265,8 +265,6 @@ def get_conll_style_tags(tokenization, golden_tags, mode='char'):
                 tags = token_tag.tag.split(' ')
             assert len(tags) == len(token.text)
             for pos, (tk, tg) in enumerate(zip(token.text, tags)):
-                #if tg != None and tg.endswith('PRO'):
-                #    tg = 'O'
                 if mode == 'char':
                     fields = (tk, tk, tg)
                 elif mode == 'word': 
@@ -275,8 +273,6 @@ def get_conll_style_tags(tokenization, golden_tags, mode='char'):
                     fields = (tk, tk+str(pos), tg)
                 else:
                     raise ValueError('representation cannot take mode %s!\n'%mode)
-                #print fields
-                #fields.extend(golden_tags)
                 X.append(fields)
     return X
 
@@ -284,10 +280,8 @@ def get_conll_style_tags(tokenization, golden_tags, mode='char'):
 def get_conll_style_annotated_tags(tokenization, annotations, golden_tags, mode='char'):
     X = []
     place_tags = set(['S', 'B', 'I', 'E', 'N', 'O'])
-    #print 'in get_conll_style_annotated_tags, annotation size:', len(annotations)
     if golden_tags:
         for (atype, tag) in annotations:
-            #print 'tag:', tag.taggedTokenList
             assert len(tag.taggedTokenList) == len(golden_tags.taggedTokenList)
     if tokenization.tokenList:
         for i, token in enumerate(tokenization.tokenList.tokenList):
@@ -300,34 +294,15 @@ def get_conll_style_annotated_tags(tokenization, annotations, golden_tags, mode=
             if len(annotations) == 1 and annotations[0][0] == POS:
                 annos[0] = annos[0] * len(tags)
             annos.append(tags)
-            #print 'labels:', annotations
-            #print token.text
-            #print annos
             for pos, anno in enumerate(zip(token.text, *annos)):
-                #print pos, ' '.join(anno)
                 if len(token.text) == 1:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'S-'+a for a in anno[1:] ]
-                    #pt = 'S-'+postag
-                    #st = 'S-word'
                 elif pos == 0:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'B-'+a for a in anno[1:] ]
-                    #pt = 'B-'+postag
-                    #st = 'B-word'
                 elif pos == len(token.text)-1:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'E-'+a for a in anno[1:]]
-                    #pt = 'E-'+postag
-                    #st = 'E-word'
                 else:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'I-'+a for a in anno[1:]]
-                    #pt = 'I-'+postag
-                    #st = 'I-word'
-                '''if mode == 'char':
-                    fields = (tk, tk, st, pt, tg)
-                elif mode == 'word': 
-                    fields = (tk, token.text, st, pt, tg)
-                elif mode == 'charpos':
-                    fields = (tk, tk+str(pos), st, pt, tg)
-                '''
                 if len(annotations) == 1:
                     converted_anno = [converted_anno[0], converted_anno[1], converted_anno[1], converted_anno[2]]
                     converted_anno[1] = converted_anno[1].split('-')[0] + '-word'
@@ -338,8 +313,6 @@ def get_conll_style_annotated_tags(tokenization, annotations, golden_tags, mode=
                 elif mode != 'char':
                     raise ValueError('representation cannot take mode %s!\n'%mode)
                 fields = list([token.text[pos]] + converted_anno)
-                #print fields
-                #fields.extend(golden_tags)
                 X.append(fields)
     return X
 
@@ -357,12 +330,9 @@ def load_data_concrete(train_dir, dev_dir, test_dir, eval_test=False, feature_th
     return [train_set, valid_set, test_set, dic]
 
 def get_files(file_dir): 
-    #print file_dir
     if os.path.isdir(file_dir):
 	return [(read_communication_from_file(os.path.join(file_dir, fn)), fn) for fn in next(os.walk(file_dir))[2]]
     elif tarfile.is_tarfile(file_dir):
-	#for (comm, filename) in CommunicationReader(file_dir):
-	#	print filename
 	return [(comm, filename) for (comm, filename) in CommunicationReader(file_dir)]
     elif os.path.isfile(file_dir):
         return [(read_communication_from_file(file_dir), None)]
@@ -416,19 +386,15 @@ def conll_feature_extract(sentences_conll, features_to_id, word_to_id, label_to_
             labels = []
         else:
             labels = [label_to_id[lb] for lb in get_label(sntc, -1)]
-            #tlabels = [lb for lb in get_label(sntc, -1)]
         train_feat = []
         features = apply_feature_templates(sntc)
         for i, ftv in enumerate(features):
-            #if raw_words[i] not in word_to_id:
-            #	continue
             feat = [features_to_id[escape(ft)] for ft in ftv['F'] if escape(ft) in features_to_id]
             tft = [escape(ft) for ft in ftv['F'] if escape(ft) in features_to_id]
             if len(feat) == 0:
                 tft.append(OOV)
                 feat.append(features_to_id[OOV])
             train_feat.append(feat)
-            #ttrainft.append(tft)
         if not no_label:
             assert len(words) == len(labels)
         assert len(words) == len(train_feat)
@@ -450,16 +416,13 @@ def create_dicts_concrete(train_files, valid_files, feature_thresh, test_fn=None
     if test_label:
 	    all_labeled_files += all_unlabeled_files
 	    all_unlabeled_files = []
-    #print len(all_labeled_files), len(all_unlabeled_files)
     corpus = [comm for (comm, _) in all_labeled_files]
     words = []
     labels = []
     features = []
     get_stats_from_comm(corpus, words, labels, features, mode, True, anno)
-    #print len(set(words)), len(set(labels))
     corpus = [comm for (comm, _) in all_unlabeled_files]
     get_stats_from_comm(corpus, words, labels, features, mode, False, anno)
-    #print len(set(words)), len(set(labels))
     features_to_id = create_feature_dict(features, feature_thresh)
     word_to_id = create_lex_dict(words)
     label_to_id = create_lex_dict(labels)
@@ -472,13 +435,8 @@ def get_stats_from_comm(corpus, words, labels, features, mode, labeled=True, ann
             for sentence in sentences 
             for tok in sentence
             ]
-    #get_features = lambda sentences: [feature_extractor(X)
-    #        for X in sentences
-    #        ]
     for comm in corpus:
-        #print 'annotation type:', anno
         sentences = read_concrete(comm, not labeled, mode, anno)
-        #print sentences[0][0]
         words += get_label(sentences, 1)
         if labeled:
             labels += get_label(sentences, -1)
@@ -488,7 +446,6 @@ def get_stats_from_comm(corpus, words, labels, features, mode, labeled=True, ann
             fields_template = 'w r s y'
         elif len(sentences[0][0]) == 5:
             fields_template = 'w r s p y'
-        #print 'fields template:', fields_template
         if fields_template == 'w r y':
             features.extend(feature_extractor(readiter(sentence, fields_template.split(' ')), templates=local_templates) for sentence in sentences)
         else:
@@ -509,10 +466,6 @@ def create_feature_dict(features, feature_thresh):
                 if (ft not in features_to_id) and feature_to_freq[ft] > feature_thresh:
                     features_to_id[ft] = cur_idx
                     cur_idx+=1
-    '''print 'feature map:'
-    for k,v in features_to_id.items():
-	    print k,v
-    '''
     return features_to_id
 
 def create_lex_dict(words):
@@ -522,16 +475,10 @@ def create_lex_dict(words):
 	if not t in word_to_id:
             word_to_id[t] = cur_idx
             cur_idx+=1
-    '''print 'word map:'
-    for k,v in word_to_id.items():
-	    print k,v
-    '''
     return word_to_id
 
 
 def write_data_concrete(input_tar, output_dir, predictions):
-    #print output_dir, input_tar
-    #print os.path.join(output_dir, os.path.basename(input_tar))
     writer = CommunicationWriterTGZ()
     writer.open(os.path.join(output_dir, 'golden_horse_'+os.path.basename(input_tar)))
     for i, (comm, fn) in enumerate(get_files(input_tar)):
@@ -543,7 +490,6 @@ def write_data_concrete(input_tar, output_dir, predictions):
 def update_concrete(comm, prediction):
     toolname = 'Violet_NER_annotator'
     timestamp = int(time.time())
-    #comm = read_communication_from_file(outfile)
     mention_list = []
     for section in comm.sectionList:
 	for sentence in section.sentenceList:
@@ -558,7 +504,6 @@ def update_concrete(comm, prediction):
 	    for i, tk in enumerate(tknzation.tokenList.tokenList):
 		pred_tags = ' '.join(prediction[start:start+len(tk.text)])
 		if in_NE:
-			#print 'in NE,', prediction[start:start+len(tk.text)]
 			for i, tag in enumerate(prediction[start:start+len(tk.text)]):
 				if tag != 'I-' + ne_type:
 					if i != 0:
@@ -630,8 +575,6 @@ def eval_ner(pred, gold):
     print 'Evaluating...'
     eval_dict = {}    # value=[#match, #pred, #gold]
     for p_1sent, g_1sent in zip(pred, gold):
-        #print p_1sent
-        #print g_1sent
         in_correct_chunk = False
         last_pair = ['^', '$']
         for p, g in zip(p_1sent, g_1sent):
@@ -647,19 +590,14 @@ def eval_ner(pred, gold):
                     eval_dict[tg[1]] = [0]*3 
                 if tg[0] == 'B' or tg[0] == 'S':
                     eval_dict[tg[1]][2] += 1
-            # hit a row outside of a contineous NE chunk
-            # either p == g == 'O' or p != g
-            # in this case, it does not enter another NE chunk, change in_correct_chunk to false and change last_pair to default different value. 
-            # check whether previous block could be a correctly predicted NE chunk.
+        
             if p != g or len(tp) == 1:
                 if in_correct_chunk and tp[0] != 'I' and tg[0] != 'I' and tp[0] != 'E' and tg[0] != 'E':
                     assert last_pair[0] == last_pair[1]
                     eval_dict[last_pair[0]][0] += 1
                 in_correct_chunk = False
                 last_pair = ['^', '$'] 
-                # p == g and p == g != 'O'
             else:
-                # start a new chunk
                 if tg[0] == 'B' or tg[0] == 'S':
                     if in_correct_chunk:
                         assert (last_pair[0] == last_pair[1])
@@ -670,14 +608,11 @@ def eval_ner(pred, gold):
                 if tg[0] == 'S':
                     eval_dict[last_pair[0]][0] += 1
                     in_correct_chunk = False
-            #print eval_dict
         if in_correct_chunk:
             assert last_pair[0] == last_pair[1]
             eval_dict[last_pair[0]][0] += 1
     agg_measure = [0.0]*3
     agg_counts = [0]*3
-    #print 'evaluate dict:', eval_dict
-    #print 'violet\'s evaluation: #match\t #pred\t #gold\t precision\t recall\t F1'
     for k, v in eval_dict.items():
         agg_counts = [sum(x) for x in zip(agg_counts, v)]
         prec = float(v[0])/v[1] if v[1] != 0 else 0.0 
@@ -705,6 +640,3 @@ if __name__ == '__main__':
     #    print [' '.join([idx2feature[fi] for fi in i]) for i in f]
         print ' '.join([idx2word[li] for li in l])
         print ' '.join([idx2label[yi] for yi in y])
-    #read_concrete(sys.argv[1])
-    #create_dicts_concrete(sys.argv[1], sys.argv[1], feature_thresh=0, test_fn=sys.argv[1])
-    #load_data_concrete(sys.argv[1], sys.argv[2], sys.argv[3], mode='word')

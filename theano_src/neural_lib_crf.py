@@ -136,14 +136,9 @@ class StackConfig(collections.MutableMapping):
     actions = [
         (lambda key: key.endswith('_out_dim')       , lambda x: x),
         (lambda key: key.endswith('_T_initializer') , ArrayInit(ArrayInit.onesided_uniform)),
-        #(lambda key: key.endswith('_U_initializer') , ArrayInit(ArrayInit.ortho, multiplier=1)),
         (lambda key: key.endswith('_W_initializer') , ArrayInit(ArrayInit.twosided_uniform, multiplier=1)),
-        #(lambda key: key.endswith('_N_initializer') , ArrayInit(ArrayInit.normal)),
-        #(lambda key: key.endswith('_b_initializer') , ArrayInit(ArrayInit.zero)),
         (lambda key: key.endswith('_viterbi')       , False),
         (lambda key: key.endswith('_reg_weight')    , 0),
-        #(lambda key: key.endswith('_activation_fn') , lambda x: x + theano.tensor.abs_(x)),
-        #(lambda key: key.endswith('_v_initializer') , ArrayInit(ArrayInit.ones, multiplier=NotImplemented)),
     ]
     def __init__(self, dictionary):
         self.store = collections.OrderedDict()
@@ -267,41 +262,31 @@ class ComputeFeature(Chip):
     This requires a W_initializer
     """ 
     def construct(self, input_tv):
-	#assert 'emb_dim' in self.params
-	T_ = self._declare_mat('W', self.in_dim, self.out_dim, multiplier=1.0/self.out_dim)
-	Pad = np.zeros((1, self.out_dim))
-	FW = T.concatenate([T_, Pad], axis=0)
-	if 'emb_dim' in self.params: #self.params.use_emb:
-		EW = self._declare_mat('W', self.params['emb_dim'], self.out_dim, multiplier=1.0/self.out_dim)
-	#def __step(act_features, cur_weights):
-	#	return cur_weights[act_features.flatten()].sum(axis=0)
-	feat_tv, emb_tv = input_tv
-	n_timesteps = feat_tv.shape[0]
-	n_features = feat_tv.shape[1]
-        #transsition, _ = theano.scan(__step,
-        #                 sequences=[input_tv],
-        #                 non_sequences=[FW], #[T_],
-	#		 strict=True,
-        #                 name='feature_to_transProb')
-        #window_size = input_tv.shape[1] if input_tv.ndim > 1 else 1
+        #assert 'emb_dim' in self.params
+        T_ = self._declare_mat('W', self.in_dim, self.out_dim, multiplier=1.0/self.out_dim)
+        Pad = np.zeros((1, self.out_dim))
+        FW = T.concatenate([T_, Pad], axis=0)
+        if 'emb_dim' in self.params: #self.params.use_emb:
+            EW = self._declare_mat('W', self.params['emb_dim'], self.out_dim, multiplier=1.0/self.out_dim)
+        feat_tv, emb_tv = input_tv
+        n_timesteps = feat_tv.shape[0]
+        n_features = feat_tv.shape[1]
         chain_potential = self._declare_mat('T', self.out_dim, self.out_dim,  multiplier=1.0/self.out_dim)
-	feat_emission = FW[feat_tv.flatten()].reshape([n_timesteps, n_features, self.out_dim], ndim=3).sum(axis=1)  #transsition
-	emission_potential = feat_emission 	
-	if 'emb_dim' in self.params: #self.params.use_emb:
-		emb_new = self.params['emb_matrix'][emb_tv]
-		emb_emission = T.dot(emb_new, EW) 
-		emission_potential += emb_emission
-	self.output_tv = (emission_potential, chain_potential)
-	if 'emb_dim' in self.params: #self.params.use_emb:
-		return (T_, EW, chain_potential)
-	else:
-		return (T_, chain_potential)
+        feat_emission = FW[feat_tv.flatten()].reshape([n_timesteps, n_features, self.out_dim], ndim=3).sum(axis=1)  #transsition
+        emission_potential = feat_emission 	
+        if 'emb_dim' in self.params: #self.params.use_emb:
+            emb_new = self.params['emb_matrix'][emb_tv]
+            emb_emission = T.dot(emb_new, EW) 
+            emission_potential += emb_emission
+        self.output_tv = (emission_potential, chain_potential)
+        if 'emb_dim' in self.params: #self.params.use_emb:
+            return (T_, EW, chain_potential)
+        else:
+            return (T_, chain_potential)
 
 
     def needed_key(self):
         return []
-	#return ['emb_dim']
-	#return self._needed_key_impl(('T', 'W'))
 
 
 class Activation(Chip):
@@ -351,30 +336,29 @@ class OrderOneCrf(ScorableChip):
     def construct(self, input_tv):
         # The input is a tensor of scores.
         assert len(input_tv) == 2
-	emission_prob, chain_potential = input_tv
-	assert emission_prob.ndim == 2
-	assert chain_potential.ndim == 2
+        emission_prob, chain_potential = input_tv
+        assert emission_prob.ndim == 2
+        assert chain_potential.ndim == 2
         viterbi_flag = self.params[self.kn('viterbi')]
         #print 'in the crf layer, viterbi_flag=', viterbi_flag
-	def forward_step(obs2tags, prev_result, chain_potentials):
+        def forward_step(obs2tags, prev_result, chain_potentials):
             assert obs2tags.ndim == 1
-	    assert prev_result.ndim == 1
+            assert prev_result.ndim == 1
             f_ = prev_result.dimshuffle(0, 'x') + obs2tags.dimshuffle('x', 0) + chain_potentials
             p = (T.max(f_, axis=0)
-                 if viterbi_flag
-                 else self._th_logsumexp(f_, axis=0))
+                    if viterbi_flag
+                    else self._th_logsumexp(f_, axis=0))
             y = T.argmax(f_, axis=0).astype('int32')
             return p, y
-        #chain_potential = self._declare_mat('T', self.out_dim, self.out_dim,  multiplier=1.0/self.out_dim)
-	#initial = (emission_prob[0].dimshuffle(0, 'x') * T.ones_like(T_))
+
         initial = emission_prob[0] #* T.ones_like(T_))
         # rval is the lattice of forward scores. bp contains backpointers
         [rval, bp], _ = theano.scan(forward_step,
-                                    sequences=[emission_prob[1:]],
-                                    outputs_info=[initial, None],
-				    non_sequences=[chain_potential],
-                                    name='OrderOneCrf_scan__step',
-                                    strict=True)
+            sequences=[emission_prob[1:]],
+            outputs_info=[initial, None],
+            non_sequences=[chain_potential],
+            name='OrderOneCrf_scan__step',
+            strict=True)
         # The most likely state based on the forward/alpha scores.
         yn = rval[-1].argmax(axis=0).astype('int32')
         path_tmp, _ = theano.scan(lambda back_pointer, y: back_pointer[y],
@@ -385,29 +369,26 @@ class OrderOneCrf(ScorableChip):
                                   strict=True)
         # The output_tv contains the sequence that has the highest score.
         self.output_tv = T.concatenate([reverse(path_tmp), yn.dimshuffle('x')])
-	#if viterbi_flag:
-        #    self._partition_val = rval[-1].max(axis=0)
-        #else:
         self._partition_val = self._th_logsumexp(rval[-1], axis=0)
-        # We never show _partition_val outside of his class
         self._partition_val.name = make_name(self.name, '_partition_val')
         self.gold_y = T.ivector(make_name(self.name, 'gold_y')).astype('int32')
+    
     
         def _output_score(obs2tags, chain_potentials, y):
             def _score_step(o, y, p_, y_, c):
                 return ((p_ + c[y_, y] + o[y]), y)
+        
             y0 = y[0]
-	    p0 = obs2tags[0][y0]
+            p0 = obs2tags[0][y0]
             [rval, _], _ = theano.scan(_score_step,
-                                       sequences=[obs2tags[1:], y[1:]],
-                                       outputs_info=[p0, y0],
-				       non_sequences=[chain_potentials],
-                                       name='OrderOneCrf_scan_score_step',
-                                       strict=True)
+                sequences=[obs2tags[1:], y[1:]],
+                outputs_info=[p0, y0],
+                non_sequences=[chain_potentials],
+                name='OrderOneCrf_scan_score_step',
+                strict=True)
             return rval[-1]
         # This is the score of the gold sequence. We need this.
         self.score = (_output_score(emission_prob, chain_potential, self.gold_y) - self._partition_val)
-        #self.score = _output_score(emission_prob, chain_potential, self.gold_y) - self._partition_val
         return (chain_potential,)
 
 

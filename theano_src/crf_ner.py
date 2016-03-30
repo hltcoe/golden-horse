@@ -32,10 +32,6 @@ def predict(features, words, idx2label, idx2word, _args, f_classify, groundtruth
         [f_classify(f, w) for f, w in zip(features, words)],  #_conv_x(sentence, _args.win, _args.vocsize))
         idx2label
     )
-    #print 'pred v.s. gold:' 
-    #for pred, gold in zip(predictions, groundtruth):
-    #	    print pred
-    #	    print gold
     if groundtruth == None:
 	    return None, predictions
     results = eval_ner(predictions, groundtruth)  #conlleval(predictions, groundtruth, 
@@ -55,12 +51,6 @@ def train(train_feat, train_lex, train_y, _args, f_cost, f_update, f_debug, epoc
         iter_cost = f_cost(features, words, labels)
         #_, gold_y, pred_y = f_debug(words, labels)
 	f_update(learning_rate)
-	#print 'instance cost:', iter_cost
-	#print 'instance details:', gold_score, partition_score
-	#print 'pred v.s. gold:' 
-	#print pred_y
-	#print gold_y
-	#print labels
 	return iter_cost
 
     shuffle([train_feat, train_lex, train_y], _args.seed)
@@ -68,8 +58,6 @@ def train(train_feat, train_lex, train_y, _args, f_cost, f_update, f_debug, epoc
     aggregate_cost = 0.0
     for i, (x_f, x_w, y) in enumerate(zip(train_feat, train_lex, train_y)):
         
-	#words = _conv_x(x, _args.win, _args.vocsize)
-        #labels = _conv_y(y)
         try:
             aggregate_cost += train_crf(x_f, x_w, y, learning_rate, f_cost, f_update, f_debug)
         except IndexError:
@@ -84,7 +72,6 @@ def train(train_feat, train_lex, train_y, _args, f_cost, f_update, f_debug, epoc
     return
 
 def main(_args):
-    # Hacky part to annotate twitter data in batch.
     if _args.only_test:
 	cargs = {}
 	print "loading parameters!"
