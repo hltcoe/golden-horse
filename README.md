@@ -2,24 +2,24 @@
 
 The implementation of the paper:
 
-**Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings**
-Nanyun Peng and Mark Dredze
-*Conference on Empirical Methods in Natural Language Processing (EMNLP)*, 2015
+**Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings**  
+Nanyun Peng and Mark Dredze  
+*Conference on Empirical Methods in Natural Language Processing (EMNLP)*, 2015  
 
 If you use the code, please kindly cite the following bibtex:
 
-@inproceedings{peng2015ner,
-title={Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings.},
-author={Peng, Nanyun and Dredze, Mark},
-booktitle={EMNLP},
-pages={548–-554},
-year={2015}
+@inproceedings{peng2015ner,  
+title={Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings.},  
+author={Peng, Nanyun and Dredze, Mark},  
+booktitle={EMNLP},  
+pages={548–-554},  
+year={2015}  
 }
 
 ## Dependencies:
-This is an theano implementation; it requires installation of python module:
-Theano
-jieba (a Chinese word segmentor)
+This is an theano implementation; it requires installation of python module:  
+Theano  
+jieba (a Chinese word segmentor)  
 Both of them can be simply installed by pip moduleName.
 
 The lstm layer was adapted from http://deeplearning.net/tutorial/lstm.html and the feature extraction part was adapted from crfsuite: http://www.chokkan.org/software/crfsuite/
