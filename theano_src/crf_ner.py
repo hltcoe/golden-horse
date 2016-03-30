@@ -85,38 +85,11 @@ def train(train_feat, train_lex, train_y, _args, f_cost, f_update, f_debug, epoc
 
 def main(_args):
     # Hacky part to annotate twitter data in batch.
-    '''assert os.path.isdir(_args.test_data)
-    cargs = {}
-    print "loading parameters!"
-    load_params(_args.save_model_param, cargs)
-    for filename in next(os.walk(_args.test_data))[2]:
-	try:
-	    print 'processing file', filename
-	    tar_file = os.path.join(_args.test_data, filename)
-	    test_feat, test_lex_orig, test_y = get_data_concrete(tar_file, cargs['feature2idx'], cargs['word2idx'], cargs['label2idx'], no_label=(not _args.eval_test), mode=cargs['emb_type'])
-            sent_length = [len(x) for x in test_lex_orig]
-	    if min(sent_length) < 2:
-	        print 'skip file', filename
-		continue
-	    test_feat, test_lex, test_y = conv_data(test_feat, test_lex_orig, test_y, cargs['win'], cargs['vocsize'])
-            idx2label = dict((k, v) for v, k in cargs['label2idx'].iteritems())
-            idx2word = dict((k, v) for v, k in cargs['word2idx'].iteritems())
-            groundtruth_test = None
-	    if _args.eval_test:
-    	        groundtruth_test = convert_id_to_word(test_y, idx2label)
-	    f_classify = cargs['f_classify']
-	    res_test, pred_test = predict(test_feat, test_lex, idx2label, idx2word, _args, f_classify, groundtruth_test)
-	    write_data_concrete(tar_file, _args.output_dir, pred_test)
-    	except:
-	    print 'fail to process file', filename
-    exit(0)		    
-    # Hacky part to annotate twitter data in batch.
-    '''
     if _args.only_test:
 	cargs = {}
 	print "loading parameters!"
 	load_params(_args.save_model_param, cargs)
-	test_feat, test_lex_orig, test_y = get_data_concrete(_args.test_data, cargs['feature2idx'], cargs['word2idx'], cargs['label2idx'], no_label=(not _args.eval_test), mode=cargs['emb_type'])
+	test_feat, test_lex_orig, test_y = get_data(_args.test_data, cargs['feature2idx'], cargs['word2idx'], cargs['label2idx'], no_label=(not _args.eval_test), mode=cargs['emb_type'])
         test_feat, test_lex, test_y = conv_data(test_feat, test_lex_orig, test_y, cargs['win'], cargs['vocsize'])
         idx2label = dict((k, v) for v, k in cargs['label2idx'].iteritems())
         idx2word = dict((k, v) for v, k in cargs['word2idx'].iteritems())
@@ -129,7 +102,13 @@ def main(_args):
         exit(0)
     
     print "loading data from:", _args.training_data, _args.valid_data, _args.test_data
-    train_feat, train_lex_orig, train_y, valid_feat, valid_lex_orig, valid_y, test_feat, test_lex_orig, test_y, feature2idx, word2idx, label2idx = load_data_concrete(_args.training_data, _args.valid_data, _args.test_data, eval_test=_args.eval_test, feature_thresh=_args.ner_feature_thresh, mode=_args.emb_type) 
+    train_set, valid_set, test_set, dicts = loaddata(_args.training_data, _args.valid_data, _args.test_data, feature_thresh=_args.ner_feature_thresh, mode=_args.emb_type) 
+    train_feat, train_lex_orig, train_y = train_set 
+    valid_feat, valid_lex_orig, valid_y = valid_set 
+    test_feat, test_lex_orig, test_y = test_set 
+    feature2idx = dicts['features2idx'] 
+    word2idx = dicts['words2idx'] 
+    label2idx = dicts['labels2idx']
     #idx2feature = dict((k, v) for v, k in feature2idx.iteritems())
     _args.label2idx = label2idx
     _args.word2idx = word2idx
@@ -272,5 +251,5 @@ if __name__ == "__main__":
     add_arg('--verbose'      , 2)
     args = _arg_parser.parse_args()
     import functools
-    from sighan_ner import load_data_concrete, get_data_concrete, eval_ner, error_analysis, write_data_concrete #, conlleval
+    from sighan_ner import loaddata, get_data, eval_ner, error_analysis, write_data_concrete #, conlleval
     main(args)

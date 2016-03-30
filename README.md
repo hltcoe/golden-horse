@@ -1,8 +1,32 @@
 # golden-horse
-## The command for training is:
-time python theano_src/crf_ner.py --nepochs 30 --neval_epochs 2 --training_data /export/projects/npeng/weiboNER_data/concrete_sighan_train_phrase.tar.gz --valid_data /export/projects/npeng/weiboNER_data/concrete_sighan_valid_phrase.tar.gz --test_data /export/projects/npeng/weiboNER_data/concrete_sighan_test_phrase.tar.gz --emb_file /export/projects/npeng/weiboNER_data/gigaword_charpos_vectors --emb_type charpos --save_model_param /export/projects/npeng/weiboNER_data/sighan_best_parameters --eval_test true
 
-## For running the test, you need to do this:
-time python theano_src/crf_ner.py --test_data /home/hltcoe/npeng/weiboNER/test_dir/concrete_weiboNER_test.tar.gz --only_test true --output_dir /export/projects/npeng/weiboNER_data/ --save_model_param best-parameters
+The implementation of the paper:
 
-This will load your test_data, load model from the file you passed through --save_model_param, do the prediction and write the output into the --output_dir you assigned.
+**Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings**
+Nanyun Peng and Mark Dredze
+*Conference on Empirical Methods in Natural Language Processing (EMNLP)*, 2015
+
+If you use the code, please kindly cite the following bibtex:
+
+@inproceedings{peng2015ner,
+title={Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings.},
+author={Peng, Nanyun and Dredze, Mark},
+booktitle={EMNLP},
+pages={548–-554},
+year={2015}
+}
+
+## Dependencies:
+This is an theano implementation; it requires installation of python module:
+Theano
+jieba (a Chinese word segmentor)
+Both of them can be simply installed by pip moduleName.
+
+The lstm layer was adapted from http://deeplearning.net/tutorial/lstm.html and the feature extraction part was adapted from crfsuite: http://www.chokkan.org/software/crfsuite/
+
+## A sample command for the training:
+python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weibo_ner/weiboNER.conll.train --valid_data data/weibo_ner/weiboNER.conll.dev --test_data data/weibo_ner/weiboNER.conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type charpos --save_model_param weibo_best_parameters --eval_test false
+
+## A sample command for running the test:
+time python theano_src/crf_ner.py --test_data data/weibo_ner/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best-parameters
+

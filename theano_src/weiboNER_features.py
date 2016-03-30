@@ -9,7 +9,7 @@ Copyright 2010,2011 Naoaki Okazaki.
 separator = "\t"
 
 # Field names of the input data.
-fields = 'w y'
+fields = 'w r s p y'
 
 # Attribute templates.
 templates = (
@@ -23,18 +23,31 @@ templates = (
     (('w',  0), ('w',  1)),
     (('w',  1), ('w',  2)),
     (('w',  -1), ('w',  1)),
-    #(('pos', -2), ),
-    #(('pos', -1), ),
-    #(('pos',  0), ),
-    #(('pos',  1), ),
-    #(('pos',  2), ),
-    #(('pos', -2), ('pos', -1)),
-    #(('pos', -1), ('pos',  0)),
-    #(('pos',  0), ('pos',  1)),
-    #(('pos',  1), ('pos',  2)),
-    #(('pos', -2), ('pos', -1), ('pos',  0)),
-    #(('pos', -1), ('pos',  0), ('pos',  1)),
-    #(('pos',  0), ('pos',  1), ('pos',  2)),
+    (('s', -2), ),
+    (('s', -1), ),
+    (('s',  0), ),
+    (('s',  1), ),
+    (('s',  2), ),
+    (('s', -2), ('s',  -1)),
+    (('s', -1), ('s',  0)),
+    (('s',  0), ('s',  1)),
+    (('s',  1), ('s',  2)),
+    (('s',  -1), ('s',  1)),
+    (('s', -2), ('s',  -1), ('s', 0)),
+    (('s', -1), ('s',  0), ('s', 1)),
+    (('s', 0), ('s',  1), ('s', 2)),
+#    (('p', -2), ),
+#    (('p', -1), ),
+#    (('p',  0), ),
+#    (('p',  1), ),
+#    (('p',  2), ),
+#    (('p', -2), ('p', -1)),
+#    (('p', -1), ('p',  0)),
+#    (('p',  0), ('p',  1)),
+#    (('p',  1), ('p',  2)),
+#    (('p', -2), ('p', -1), ('p',  0)),
+#    (('p', -1), ('p',  0), ('p',  1)),
+#    (('p',  0), ('p',  1), ('p',  2)),
     )
 
 
@@ -57,13 +70,12 @@ def readiter(data, names):
     """
     X = []
     for line in data:
-	    if len(line) < len(names):
-                raise ValueError(
-                    'Too few fields (%d) for %r\n' % (len(line), names))
-            item = {'F': []}    # 'F' is reserved for features.
-            for i in range(len(names)):
-                item[names[i]] = line[i]
-            X.append(item)
+        if len(line) != len(names):
+            raise ValueError('Too many/few fields (%d) for %r\n' % (len(line), names))
+        item = {'F': []}    # 'F' is reserved for features.
+        for i in range(len(names)):
+            item[names[i]] = line[i]
+        X.append(item)
     return X
 
 def apply_templates(X, templates):
@@ -81,7 +93,7 @@ def apply_templates(X, templates):
     """
     #print 'in apply templates! input:', X
     for template in templates:
-	name = '|'.join(['%s[%d]' % (f, o) for f, o in template])
+        name = '|'.join(['%s[%d]' % (f, o) for f, o in template])
         for t in range(len(X)):
             values = []
             for field, offset in template:
@@ -128,7 +140,7 @@ def output_features(fo, X, field=''):
         fo.write('\n')
     fo.write('\n')
 
-def feature_extractor(X):
+def feature_extractor(X, templates=templates):
     # Apply attribute templates to obtain features (in fact, attributes)
     apply_templates(X, templates)
     if X:
