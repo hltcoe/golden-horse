@@ -25,8 +25,16 @@ Both of them can be simply installed by pip moduleName.
 The lstm layer was adapted from http://deeplearning.net/tutorial/lstm.html and the feature extraction part was adapted from crfsuite: http://www.chokkan.org/software/crfsuite/
 
 ## A sample command for the training:
-python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weibo_ner/weiboNER.conll.train --valid_data data/weibo_ner/weiboNER.conll.dev --test_data data/weibo_ner/weiboNER.conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type charpos --save_model_param weibo_best_parameters --eval_test false
+python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER.conll.train --valid_data data/weiboNER.conll.dev --test_data data/weiboNER.conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type charpos --save_model_param weibo_best_parameters --eval_test false
 
 ## A sample command for running the test:
-time python theano_src/crf_ner.py --test_data data/weibo_ner/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best-parameters
+python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best-parameters
 
+## Data
+We noticed that several factors could affect the replicatability of experiments:  
+1. the segmentor for preprocessing: we used jieba 0.37   
+2. the random number generator. Alghough we fixed the random seed, we noticed it will render slight different numbers on different machine.  
+3. the traditional lexical feature used.  
+To enhance the replicatability of our experiments, we provide the original data in conll format at data/weiboNER.conll.(train/dev/test). In addition, we also provide files including all the features and the char-positional transformation we used in our experiments in data/crfsuite.weiboNER.charpos.conll.(train/dev/test)
+
+Note: the data we provide contains both named and nominal mentions, you can get the dataset with only named entities by simply filtering out the nominal mentions.
