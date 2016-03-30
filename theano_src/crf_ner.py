@@ -223,7 +223,7 @@ if __name__ == "__main__":
     add_arg_to_L(TRAIN_PARAM, '--nepochs'      , 200)
     add_arg_to_L(TRAIN_PARAM, '--neval_epochs'      , 5)
     add_arg_to_L(TRAIN_PARAM, '--optimizer'    , 'sgd')
-    add_arg_to_L(TRAIN_PARAM, '--seed'         , 1) 
+    add_arg_to_L(TRAIN_PARAM, '--seed'         , 0) 
     add_arg_to_L(TRAIN_PARAM, '--decay'        , True,  action='store_true')
     add_arg_to_L(TRAIN_PARAM, '--decay_epochs' , 30)
     add_arg_to_L(TRAIN_PARAM, '--minimum_lr'   , 1e-5)

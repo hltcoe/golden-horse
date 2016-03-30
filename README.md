@@ -35,6 +35,7 @@ We noticed that several factors could affect the replicatability of experiments:
 1. the segmentor for preprocessing: we used jieba 0.37   
 2. the random number generator. Alghough we fixed the random seed, we noticed it will render slight different numbers on different machine.  
 3. the traditional lexical feature used.  
-To enhance the replicatability of our experiments, we provide the original data in conll format at data/weiboNER.conll.(train/dev/test). In addition, we also provide files including all the features and the char-positional transformation we used in our experiments in data/crfsuite.weiboNER.charpos.conll.(train/dev/test)
+4. the pre-trained embeddings.
+To enhance the replicatability of our experiments, we provide the original data in conll format at data/weiboNER.conll.(train/dev/test). In addition, we also provide files including all the features and the char-positional transformation we used in our experiments in data/crfsuite.weiboNER.charpos.conll.(train/dev/test), as well as the pre-trained char and char-positional embeddings.
 
 Note: the data we provide contains both named and nominal mentions, you can get the dataset with only named entities by simply filtering out the nominal mentions.
