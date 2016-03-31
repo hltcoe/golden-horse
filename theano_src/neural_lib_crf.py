@@ -67,7 +67,7 @@ class ArrayInit(object):
     ones = 'ones'
     fromfile = 'fromfile'
     def __init__(self, option,
-                 multiplier=None,
+                 multiplier=0.01,
                  matrix=None,
                  word2idx=None):
         self.option = option
@@ -137,6 +137,7 @@ class StackConfig(collections.MutableMapping):
         (lambda key: key.endswith('_out_dim')       , lambda x: x),
         (lambda key: key.endswith('_T_initializer') , ArrayInit(ArrayInit.onesided_uniform)),
         (lambda key: key.endswith('_W_initializer') , ArrayInit(ArrayInit.twosided_uniform, multiplier=1)),
+        (lambda key: key.endswith('_N_initializer') , ArrayInit(ArrayInit.normal)),
         (lambda key: key.endswith('_viterbi')       , False),
         (lambda key: key.endswith('_reg_weight')    , 0),
     ]

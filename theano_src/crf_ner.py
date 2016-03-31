@@ -163,6 +163,7 @@ def main(_args):
             if res_valid['f1'] > best_f1:
                 best_f1 = res_valid['f1']
                 param['be'] = epoch_id
+                param['last_decay'] = epoch_id
                 param['vf1'] = (res_valid['f1'])  #res_train['f1'], , res_test['f1']
                 param['vp'] = (res_valid['p'])  #res_train['p'], , res_test['p']
                 param['vr'] = (res_valid['r'])  #res_train['r'], , res_test['r']
@@ -182,7 +183,9 @@ def main(_args):
 	    else:
                 pass
         # decay learning rate if no improvement in 10 epochs
-        if _args.decay and (epoch_id - param['be']) >= _args.decay_epochs and (epoch_id - param['be']) % _args.decay_epochs == 0:
+        if _args.decay and (epoch_id - param['last_decay']) >= _args.decay_epochs: #and (epoch_id - param['be']) % _args.decay_epochs == 0:
+            print 'learning rate decay at epoch', epoch_id
+            param['last_decay'] = epoch_id
             param['clr'] *= 0.5
         # If learning rate goes down to minimum then break.
         if param['clr'] < _args.minimum_lr:
@@ -223,9 +226,9 @@ if __name__ == "__main__":
     add_arg_to_L(TRAIN_PARAM, '--nepochs'      , 200)
     add_arg_to_L(TRAIN_PARAM, '--neval_epochs'      , 5)
     add_arg_to_L(TRAIN_PARAM, '--optimizer'    , 'sgd')
-    add_arg_to_L(TRAIN_PARAM, '--seed'         , 0) 
+    add_arg_to_L(TRAIN_PARAM, '--seed'         , 1) 
     add_arg_to_L(TRAIN_PARAM, '--decay'        , True,  action='store_true')
-    add_arg_to_L(TRAIN_PARAM, '--decay_epochs' , 30)
+    add_arg_to_L(TRAIN_PARAM, '--decay_epochs' , 10)
     add_arg_to_L(TRAIN_PARAM, '--minimum_lr'   , 1e-5)
     ## Topology
     add_arg_to_L(TOPO_PARAM, '--circuit',                      'plainOrderOneCRF',
