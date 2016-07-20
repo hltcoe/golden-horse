@@ -69,10 +69,10 @@ def read_matrix_from_file(fn, dic, ecd='utf-8'):
 	line_count = 0
 	M = ArrayInit(ArrayInit.onesided_uniform, multiplier=1.0/dim).initialize(len(dic), dim)
 	for line in inf:
-		elems = line.rstrip().split()
+		elems = line.rstrip().split(' ')
 		if elems[0] in dic:
 			idx = dic[elems[0]]
-			vec_elem = elems[1].split(',')
+            vec_elem = elems[1:]
 			r = np.array([float(_e) for _e in vec_elem])
 			M[idx] = (r/np.linalg.norm(r)) * multiplier 
 			idx_map[idx] = line_count
