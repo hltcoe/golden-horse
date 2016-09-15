@@ -30,7 +30,7 @@ python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/
 ## A sample command for running the test:
 python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best_parameters
 
-In the above example, the output will be written at output_dir/weiboNER.conll.test.prediction. If you also want to see the evaluation (you must have labeled test data, you can add flag --eval_test True.)
+In the above example, the output will be written at output_dir/weiboNER.conll.test.prediction. If you also want to see the evaluation (you must have labeled test data), you can add flag --eval_test True.
 
 
 ## Data
