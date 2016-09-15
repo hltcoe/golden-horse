@@ -28,7 +28,10 @@ The lstm layer was adapted from http://deeplearning.net/tutorial/lstm.html and t
 python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER.conll.train --valid_data data/weiboNER.conll.dev --test_data data/weiboNER.conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type charpos --save_model_param weibo_best_parameters --eval_test false
 
 ## A sample command for running the test:
-python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best-parameters
+python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best_parameters
+
+In the above example, the output will be written at output_dir/weiboNER.conll.test.prediction. If you also want to see the evaluation (you must have labeled test data, you can add flag --eval_test True.)
+
 
 ## Data
 We noticed that several factors could affect the replicatability of experiments:  

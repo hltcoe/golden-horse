@@ -4,6 +4,7 @@
 import argparse, os, random, subprocess, sys, time
 import theano, numpy
 import theano.tensor as T
+import codecs as cs
 from neural_lib_crf import StackConfig, ArrayInit, plainOrderOneCRF 
 from train_util import dict_from_argparse, shuffle, conv_data, read_matrix_from_pkl, read_matrix_from_file, write_matrix_to_file, create_circuit, save_parameters, load_params, conv_emb # _conv_feat, _conv_x, _conv_y,
 from train_util import sgd 
@@ -71,25 +72,34 @@ def train(train_feat, train_lex, train_y, _args, f_cost, f_update, f_debug, epoc
     #print 'training, current learning rate:', learning_rate
     return
 
+def write_prediction(filename, output_dir, lex_test, pred_test):
+    with cs.open(os.path.join(os.path.basename(output_dir), filename), 'w', encoding='utf-8') as outf:
+        for sent_w, sent_l in zip(lex_test, pred_test):
+            assert len(sent_w) == len(sent_l)
+            for w, l in zip(sent_w, sent_l):
+                outf.write(w+'\t'+l+'\n')
+            outf.write('\n')
+
 def main(_args):
     if _args.only_test:
-	cargs = {}
-	print "loading parameters!"
-	load_params(_args.save_model_param, cargs)
-	test_feat, test_lex_orig, test_y = get_data(_args.test_data, cargs['feature2idx'], cargs['word2idx'], cargs['label2idx'], no_label=(not _args.eval_test), mode=cargs['emb_type'])
+        cargs = {}
+        print "loading parameters!"
+        load_params(_args.save_model_param, cargs)
+        test_feat, test_lex_orig, test_y = get_data(_args.test_data, cargs['feature2idx'], cargs['word2idx'], cargs['label2idx'], cargs['emb_type'], anno=None, has_label=_args.eval_test)
         test_feat, test_lex, test_y = conv_data(test_feat, test_lex_orig, test_y, cargs['win'], cargs['vocsize'])
         idx2label = dict((k, v) for v, k in cargs['label2idx'].iteritems())
         idx2word = dict((k, v) for v, k in cargs['word2idx'].iteritems())
         groundtruth_test = None
-	if _args.eval_test:
-    	    groundtruth_test = convert_id_to_word(test_y, idx2label)
-	f_classify = cargs['f_classify']
-	res_test, pred_test = predict(test_feat, test_lex, idx2label, idx2word, _args, f_classify, groundtruth_test)
-	write_data_concrete(_args.test_data, _args.output_dir, pred_test)
+        if _args.eval_test:
+            groundtruth_test = convert_id_to_word(test_y, idx2label)
+        original_text = convert_id_to_word(test_lex_orig, idx2word)
+        f_classify = cargs['f_classify']
+        res_test, pred_test = predict(test_feat, test_lex, idx2label, idx2word, _args, f_classify, groundtruth_test)
+        write_prediction(_args.test_data+'.prediction', _args.output_dir, original_text, pred_test)
         exit(0)
     
     print "loading data from:", _args.training_data, _args.valid_data, _args.test_data
-    train_set, valid_set, test_set, dicts = loaddata(_args.training_data, _args.valid_data, _args.test_data, feature_thresh=_args.ner_feature_thresh, mode=_args.emb_type) 
+    train_set, valid_set, test_set, dicts = loaddata(_args.training_data, _args.valid_data, _args.test_data, feature_thresh=_args.ner_feature_thresh, mode=_args.emb_type, test_label=_args.eval_test) 
     train_feat, train_lex_orig, train_y = train_set 
     valid_feat, valid_lex_orig, valid_y = valid_set 
     test_feat, test_lex_orig, test_y = test_set 
@@ -241,5 +251,5 @@ if __name__ == "__main__":
     add_arg('--verbose'      , 2)
     args = _arg_parser.parse_args()
     import functools
-    from sighan_ner import loaddata, get_data, eval_ner, error_analysis, write_data_concrete #, conlleval
+    from sighan_ner import loaddata, get_data, eval_ner, error_analysis #, conlleval
     main(args)
