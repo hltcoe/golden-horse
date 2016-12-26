@@ -132,13 +132,13 @@ def load_dicts(dict_file):
 
 
 # Note: if feature_thresh < 0, means load the feature, lex and y dict.
-def loaddata(train_name, valid_name, test_name, feature_thresh=1, mode='char', anno=None):
+def loaddata(train_name, valid_name, test_name, feature_thresh=1, mode='char', anno=None, test_label=True):
     def f():
         print "construct dictionaries!"
         dict_feature, dict_lex, dict_y = create_dicts(train_name, valid_name, feature_thresh, test_name, mode, anno)
         train_set = get_data(train_name, dict_feature, dict_lex, dict_y, mode, anno)
         valid_set = get_data(valid_name, dict_feature, dict_lex, dict_y, mode, anno)
-        test_set = get_data(test_name, dict_feature, dict_lex, dict_y, mode, anno)
+        test_set = get_data(test_name, dict_feature, dict_lex, dict_y, mode, anno, test_label)
         dic = {'words2idx':dict_lex, 'labels2idx':dict_y, 'features2idx':dict_feature}
         return [train_set, valid_set, test_set, dic]
     #return (train_feat, train_lex, train_y, valid_feat, valid_lex, valid_y, test_feat, test_lex, test_y, dict_feature, dict_lex, dict_y)
@@ -171,7 +171,7 @@ def convdata_helper(chars, labels, repre, anno):
     #print X
     return X
 
-def convdata(lines, dict_feature, dict_lex, dict_y, repre, anno):
+def convdata(lines, dict_feature, dict_lex, dict_y, repre, anno, label=True):
     corpus_feat = []
     corpus_lex = []
     corpus_y = []
@@ -183,21 +183,25 @@ def convdata(lines, dict_feature, dict_lex, dict_y, repre, anno):
         for token in line.split('\n'):
             array = token.split()
             chars.append(array[0])
-            labels.append(array[-1])
+            if label:
+                labels.append(array[-1])
+            else:
+                labels.append(None)
         X = convdata_helper(chars, labels, repre, anno)
         #print 'conv data:', ' '.join(['-'.join(fld) for fld in X])
         sentences.append(X)
-    conll_feature_extract(sentences, dict_feature, dict_lex, dict_y, False, corpus_lex, corpus_y, corpus_feat)
+    conll_feature_extract(sentences, dict_feature, dict_lex, dict_y, not label, corpus_lex, corpus_y, corpus_feat)
     return [corpus_feat, corpus_lex, corpus_y]
 
-def get_data(fn, dict_feature, dict_lex, dict_y, repre, anno):
+def get_data(fn, dict_feature, dict_lex, dict_y, repre, anno, has_label=True):
     with cs.open(fn, 'r', encoding='utf-8') as f:
         return convdata(f.read().strip().split('\n\n'),
                 dict_feature,
                 dict_lex, 
                 dict_y,
                 repre,
-                anno
+                anno,
+                has_label
                 )
 	
 def read_concrete(comm, no_label=False, mode='char', anno=None):

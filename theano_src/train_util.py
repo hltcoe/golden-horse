@@ -62,26 +62,26 @@ def read_matrix_from_file(fn, dic, ecd='utf-8'):
     multiplier = np.sqrt(1.0/3)
     not_in_dict = 0
     with codecs.open(fn, encoding=ecd, errors='ignore') as inf:
-	row, column = inf.readline().rstrip().split()
-	dim = int(column)
-	#print row, column
-    	idx_map = dict()
-	line_count = 0
-	M = ArrayInit(ArrayInit.onesided_uniform, multiplier=1.0/dim).initialize(len(dic), dim)
-	for line in inf:
-		elems = line.rstrip().split(' ')
-		if elems[0] in dic:
-			idx = dic[elems[0]]
-            vec_elem = elems[1:]
-			r = np.array([float(_e) for _e in vec_elem])
-			M[idx] = (r/np.linalg.norm(r)) * multiplier 
-			idx_map[idx] = line_count
-		else:
-			not_in_dict += 1
-		line_count += 1
-    print 'load embedding! %s words, %d not in the dictionary. Dictionary size: %d' %(row, not_in_dict, len(dic))
-    #print M.shape, len(idx_map)
-    return M, idx_map 
+        row, column = inf.readline().rstrip().split()
+        dim = int(column)
+        #print row, column
+        idx_map = dict()
+        line_count = 0
+        M = ArrayInit(ArrayInit.onesided_uniform, multiplier=1.0/dim).initialize(len(dic), dim)
+        for line in inf:
+            elems = line.rstrip().split(' ')
+            if elems[0] in dic:
+                idx = dic[elems[0]]
+                vec_elem = elems[1:]
+                r = np.array([float(_e) for _e in vec_elem])
+                M[idx] = (r/np.linalg.norm(r)) * multiplier 
+                idx_map[idx] = line_count
+            else:
+                not_in_dict += 1
+            line_count += 1
+        print 'load embedding! %s words, %d not in the dictionary. Dictionary size: %d' %(row, not_in_dict, len(dic))
+        #print M.shape, len(idx_map)
+        return M, idx_map 
 
 def read_idxmap_from_file(fn):
 	idx_map = dict()
