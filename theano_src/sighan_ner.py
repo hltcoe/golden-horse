@@ -51,7 +51,7 @@ local_templates = (
 )
 
 def create_dicts(train_fn, valid_fn, feature_thresh, test_fn, mode, anno):
-    get_label = lambda fn, pos: [[e.split()[pos]#e.split('\t')[pos]
+    get_label = lambda fn, pos: [[e.split()[pos] #e.split('\t')[pos]
                                   for e 
                                   in line.strip().split('\n')]
                                   for line
