@@ -1,4 +1,4 @@
-# Important update
+# Important update of the data
 
 We fixed some inconsistancies in the data, especially the annotations for the nominal mentions.
 We thank Hangfeng He for his contribution to the major cleanup and revision of the annotations.
@@ -9,12 +9,12 @@ We composed updated results of our models on the revised version of the data in 
 
 If you use the revised version, please kindly add the citation of the following bibtex to the citation of our original paper:
 
-@article{HeS16,
-author={Hangfeng He and Xu Sun},
-title={F-Score Driven Max Margin Neural Network for Named Entity Recognition in Chinese Social Media},
-journal={CoRR},
-volume={abs/1611.04234},
-year={2016}
+@article{HeS16,  
+author={Hangfeng He and Xu Sun},  
+title={F-Score Driven Max Margin Neural Network for Named Entity Recognition in Chinese Social Media.},  
+journal={CoRR},  
+volume={abs/1611.04234},  
+year={2016}  
 }
 
 # golden-horse
