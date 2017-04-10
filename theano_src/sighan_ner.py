@@ -203,7 +203,30 @@ def get_data(fn, dict_feature, dict_lex, dict_y, repre, anno, has_label=True):
                 anno,
                 has_label
                 )
+
+
+def get_tokenizations(comm, tool=None):
+    """Returns a flat list of all Tokenization objects in a Communication
+
+    Args:
+        comm (Communication):
+
+    Returns:
+        A list of all Tokenization objects within the Communication
+    """
+    tokenizations = []
+
+    if comm.sectionList:
+        for section in comm.sectionList:
+            if section.sentenceList:
+                for sentence in section.sentenceList:
+                    if sentence.tokenization:
+                        if (tool is None or
+                                sentence.tokenization.metadata.tool == tool):
+                            tokenizations.append(sentence.tokenization)
+    return tokenizations
 	
+
 def read_concrete(comm, no_label=False, mode='char', anno=None):
     #comm = read_communication_from_file(concrete_file)
     tokenizations = get_tokenizations(comm)
