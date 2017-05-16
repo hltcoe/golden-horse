@@ -6,28 +6,11 @@ import cPickle as pickle
 import time
 import uuid
 import random
-import jieba.posseg as pseg
-import jieba
+#import jieba.posseg as pseg
+#import jieba
+from icwb import char_transform
 from collections import defaultdict
-from concrete.util.file_io import *
-from concrete.util import generate_UUID
-from concrete.inspect import *
 from weiboNER_features import *
-from concrete import (
-	AnnotationMetadata,
-	TextSpan,
-	Token,
-	Tokenization,
-	TokenizationKind,
-	TokenList,
-	TokenTagging,
-	TaggedToken,
-	EntityMentionSet,
-	EntityMention,
-	EntitySet,
-	Entity,
-	TokenRefSequence
-	)
 
 OOV = '_OOV_'
 GOLD_TAG = 'GoldNER'
@@ -51,7 +34,7 @@ local_templates = (
 )
 
 def create_dicts(train_fn, valid_fn, feature_thresh, test_fn, mode, anno):
-    get_label = lambda fn, pos: [[e.split()[pos] #e.split('\t')[pos]
+    get_label = lambda fn, pos: [[e.split()[pos]#e.split('\t')[pos]
                                   for e 
                                   in line.strip().split('\n')]
                                   for line
@@ -114,6 +97,9 @@ def create_dicts(train_fn, valid_fn, feature_thresh, test_fn, mode, anno):
     cur_idx = 0
     for ilabels in labels:
         for t in ilabels:
+            ## very hacky version to filter out all the nominal mentions
+            #if t.endswith('NOM'):
+            #    t = 'O'
             if not t in label_to_id:
                 label_to_id[t] = cur_idx
                 cur_idx+=1
@@ -146,10 +132,13 @@ def loaddata(train_name, valid_name, test_name, feature_thresh=1, mode='char', a
 
 def convdata_helper(chars, labels, repre, anno):
     X = []
+    ## very hacky version to filter out all the nominal mentions
+    #labels = [l if not l.endswith('NOM') else 'O' for l in labels]
     if repre == 'char' and anno == None:
         for c, l in zip(chars, labels):
             X.append((c,c,l))
     else:
+        import jieba
         sent = ''.join(chars)
         token_tag_list = jieba.cut(sent) #pseg.cut(sent)
         count = 0
@@ -165,7 +154,7 @@ def convdata_helper(chars, labels, repre, anno):
                 if anno == None:
                     fields = (char, r, labels[count])
                 else:
-                    raise ValueError('annotation cannot take value %s!\n'%anno)
+                    raise ValueError('representation cannot take value %s!\n'%repre)
                 count += 1
                 X.append(fields)
     #print X
@@ -190,10 +179,11 @@ def convdata(lines, dict_feature, dict_lex, dict_y, repre, anno, label=True):
         X = convdata_helper(chars, labels, repre, anno)
         #print 'conv data:', ' '.join(['-'.join(fld) for fld in X])
         sentences.append(X)
-    conll_feature_extract(sentences, dict_feature, dict_lex, dict_y, not label, corpus_lex, corpus_y, corpus_feat)
+    conll_feature_extract(sentences, dict_feature, dict_lex, dict_y, False, corpus_lex, corpus_y, corpus_feat)
     return [corpus_feat, corpus_lex, corpus_y]
 
 def get_data(fn, dict_feature, dict_lex, dict_y, repre, anno, has_label=True):
+    print 'get data from', fn
     with cs.open(fn, 'r', encoding='utf-8') as f:
         return convdata(f.read().strip().split('\n\n'),
                 dict_feature,
@@ -203,61 +193,7 @@ def get_data(fn, dict_feature, dict_lex, dict_y, repre, anno, has_label=True):
                 anno,
                 has_label
                 )
-
-
-def get_tokenizations(comm, tool=None):
-    """Returns a flat list of all Tokenization objects in a Communication
-
-    Args:
-        comm (Communication):
-
-    Returns:
-        A list of all Tokenization objects within the Communication
-    """
-    tokenizations = []
-
-    if comm.sectionList:
-        for section in comm.sectionList:
-            if section.sentenceList:
-                for sentence in section.sentenceList:
-                    if sentence.tokenization:
-                        if (tool is None or
-                                sentence.tokenization.metadata.tool == tool):
-                            tokenizations.append(sentence.tokenization)
-    return tokenizations
 	
-
-def read_concrete(comm, no_label=False, mode='char', anno=None):
-    #comm = read_communication_from_file(concrete_file)
-    tokenizations = get_tokenizations(comm)
-    sentences = []
-    #print 'annotation type:', anno
-    for tokenization in tokenizations:
-        if tokenization.tokenTaggingList == None:
-            warnings.warn(
-                    "We need gold annotation stored in tokenTaggingList! Check the format of your input concrete files!",
-                    RuntimeWarning)
-            continue
-        annotation = get_tokentaggings_of_type_v(tokenization, anno)
-        #print 'in read_concrete, annotations:', annotation[0]
-        if no_label:
-            if len(annotation) != 0:
-                # we can extract an array of annotations, here we only focus on one type of annotaiton.
-                X = get_conll_style_annotated_tags(tokenization, [(anno,annotation[0])], None, mode)
-            else:
-                X = get_conll_style_tags(tokenization, None, mode)
-        else:    
-    	    gold_tags = get_tokentaggings_of_type_v(tokenization, GOLD_TAG)
-            if len(annotation) != 0: 
-                # we can extract an array of annotations, here we only focus on one type of annotation.
-                X = get_conll_style_annotated_tags(tokenization, [(anno,annotation[0])], gold_tags[0], mode)
-            else:
-                X = get_conll_style_tags(tokenization, gold_tags[0], mode)
-        if len(X) <= 1: 
-            continue
-        sentences.append(X)
-        #sentences.append(sentence)
-    return sentences
 
 def get_tokentaggings_of_type_v(tokenization, taggingType):
     return [tt for tt in tokenization.tokenTaggingList if (tt.taggingType and taggingType and tt.taggingType.lower() == taggingType.lower())]
@@ -282,79 +218,80 @@ def set_tokentaggings_of_type_v(tokenization, taggingType, prediction, toolname)
             uuid=generate_UUID())
     tokenization.tokenTaggingList.append(new_tokentagging)
 
-def get_conll_style_tags(tokenization, golden_tags, mode='char'):
+def get_conll_style_tags(tokenization, golden_tags, mode='char', lang='CN'):
     X = []
     if tokenization.tokenList:
         for i, token in enumerate(tokenization.tokenList.tokenList):
-            tags = [None] * len(token.text)
+            if lang == 'CN':
+                tks = token.text #[token.text]
+            else:
+                tks = [token.text]
+            tags = [None] * len(tks)
             if golden_tags != None:
                 token_tag = golden_tags.taggedTokenList[i] #[unicode(token_tag_list[i]) for token_tag_list in golden_tags]
                 tags = token_tag.tag.split(' ')
-            assert len(tags) == len(token.text)
-            for pos, (tk, tg) in enumerate(zip(token.text, tags)):
+            assert len(tags) == len(tks)
+            for pos, (tk, tg) in enumerate(zip(tks, tags)):
+                # Hacky version
+                tag = tg[:9]
                 if mode == 'char':
-                    fields = (tk, tk, tg)
+                    fields = [tk, tk, tag]
                 elif mode == 'word': 
-                    fields = (tk, token.text, tg)
+                    fields = [tk, token.text, tag]
                 elif mode == 'charpos':
-                    fields = (tk, tk+str(pos), tg)
+                    fields = [tk, tk+str(pos), tag]
                 else:
                     raise ValueError('representation cannot take mode %s!\n'%mode)
                 X.append(fields)
     return X
 
 
-def get_conll_style_annotated_tags(tokenization, annotations, golden_tags, mode='char'):
+def get_conll_style_annotated_tags(tokenization, annotations, golden_tags, mode='char', lang='CN'):
     X = []
     place_tags = set(['S', 'B', 'I', 'E', 'N', 'O'])
     if golden_tags:
         for (atype, tag) in annotations:
             assert len(tag.taggedTokenList) == len(golden_tags.taggedTokenList)
     if tokenization.tokenList:
+        if lang == 'CN':
+            tks = token.text 
+        else:
+            tks = [token.text]
         for i, token in enumerate(tokenization.tokenList.tokenList):
-            tags = [None] * len(token.text)
+            tags = [None] * len(tks)
             if golden_tags != None:
                 token_tag = golden_tags.taggedTokenList[i] #[unicode(token_tag_list[i]) for token_tag_list in golden_tags]
                 tags = token_tag.tag.split(' ')
-            assert len(tags) == len(token.text)
+            assert len(tags) == len(tks)
             annos = [anno.taggedTokenList[i].tag.split(' ') for (atype,anno) in annotations]
             if len(annotations) == 1 and annotations[0][0] == POS:
                 annos[0] = annos[0] * len(tags)
             annos.append(tags)
-            for pos, anno in enumerate(zip(token.text, *annos)):
-                if len(token.text) == 1:
+            for pos, anno in enumerate(zip(tks, *annos)):
+                if len(tks) == 1:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'S-'+a for a in anno[1:] ]
                 elif pos == 0:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'B-'+a for a in anno[1:] ]
-                elif pos == len(token.text)-1:
+                elif pos == len(tks)-1:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'E-'+a for a in anno[1:]]
                 else:
                     converted_anno = [anno[0]] + [a if (len(a.split('-')) == 2 and a.split('-')[0] in place_tags) or a=='O' or a=='N' else 'I-'+a for a in anno[1:]]
+                rep = char_transform(converted_anno[0])
                 if len(annotations) == 1:
                     converted_anno = [converted_anno[0], converted_anno[1], converted_anno[1], converted_anno[2]]
                     converted_anno[1] = converted_anno[1].split('-')[0] + '-word'
                 if mode == 'word':
-                    converted_anno[0] = token.text
+                    converted_anno[0] = tks
                 elif mode == 'charpos':
                     converted_anno[0] = converted_anno[0] + str(pos)
                 elif mode != 'char':
                     raise ValueError('representation cannot take mode %s!\n'%mode)
-                fields = list([token.text[pos]] + converted_anno)
+                # when rep == 'O', it's regular hanzi
+                if rep != 'O':
+                    converted_anno[0] = rep
+                fields = list([tks[pos]] + converted_anno)
                 X.append(fields)
     return X
-
-
-def load_data_concrete(train_dir, dev_dir, test_dir, eval_test=False, feature_thresh=1, mode='char', anno=None):
-    train_files = train_dir 
-    valid_files = dev_dir  
-    test_files  = test_dir
-    print 'annotation type:', anno
-    dict_feature, dict_lex, dict_y = create_dicts_concrete(train_files, valid_files, feature_thresh, test_fn=test_files, test_label=eval_test, mode=mode, anno=anno)
-    train_set = get_data_concrete(train_files, dict_feature, dict_lex, dict_y, mode=mode, anno=anno)
-    valid_set = get_data_concrete(valid_files, dict_feature, dict_lex, dict_y, mode=mode, anno=anno)
-    test_set = get_data_concrete(test_files , dict_feature, dict_lex, dict_y, no_label=(not eval_test), mode=mode, anno=anno)
-    dic = {'words2idx':dict_lex, 'labels2idx':dict_y, 'features2idx':dict_feature}
-    return [train_set, valid_set, test_set, dic]
 
 def get_files(file_dir): 
     if os.path.isdir(file_dir):
@@ -363,25 +300,6 @@ def get_files(file_dir):
 	return [(comm, filename) for (comm, filename) in CommunicationReader(file_dir)]
     elif os.path.isfile(file_dir):
         return [(read_communication_from_file(file_dir), None)]
-
-
-def get_data_concrete(file_dir, features_to_id, word_to_id, label_to_id, no_label=False, mode='char', anno=None):
-    print 'get data from', file_dir
-    corpus = [comm for (comm, fname) in get_files(file_dir)]
-    return get_data_corpus(corpus, features_to_id, word_to_id, label_to_id, no_label, mode, anno) 
-
-
-def get_data_corpus(corpus, features_to_id, word_to_id, label_to_id, no_label=False, mode='char', anno=None):
-    corpus_lex = []
-    corpus_y = []
-    corpus_feat = []
-    for comm in corpus:
-        sentences = read_concrete(comm, no_label, mode, anno)
-        conll_feature_extract(sentences, features_to_id, word_to_id, label_to_id, no_label, corpus_lex, corpus_y, corpus_feat)
-    assert len(corpus_y) == len(corpus_lex)
-    print 'in get_data_corpus, num lines=%d, feature size=%d, voc size=%d, label size=%d' % (len(corpus_y), len(features_to_id), len(word_to_id), len(label_to_id))
-    return [corpus_feat, corpus_lex, corpus_y]
-    # Change the crf_ner code to handle no label case
 
 def apply_feature_templates(sntc):
     if len(sntc[0]) == 3:
@@ -416,6 +334,8 @@ def conll_feature_extract(sentences_conll, features_to_id, word_to_id, label_to_
         train_feat = []
         features = apply_feature_templates(sntc)
         for i, ftv in enumerate(features):
+            #if raw_words[i] not in word_to_id:
+            #	continue
             feat = [features_to_id[escape(ft)] for ft in ftv['F'] if escape(ft) in features_to_id]
             tft = [escape(ft) for ft in ftv['F'] if escape(ft) in features_to_id]
             if len(feat) == 0:
@@ -436,47 +356,6 @@ def conll_feature_extract(sentences_conll, features_to_id, word_to_id, label_to_
     assert len(corpus_lex) == len(corpus_y)
     assert len(corpus_lex) == len(corpus_feat)
 
-def create_dicts_concrete(train_files, valid_files, feature_thresh, test_fn=None, test_label=True, mode='char', anno=None):  
-    all_labeled_files = get_files(train_files) + ([] if valid_files is None else get_files(valid_files))
-    all_unlabeled_files = [] if test_fn is None else get_files(test_fn)
-    print 'in create_dicts_concrete,', len(all_labeled_files), len(all_unlabeled_files)
-    if test_label:
-	    all_labeled_files += all_unlabeled_files
-	    all_unlabeled_files = []
-    corpus = [comm for (comm, _) in all_labeled_files]
-    words = []
-    labels = []
-    features = []
-    get_stats_from_comm(corpus, words, labels, features, mode, True, anno)
-    corpus = [comm for (comm, _) in all_unlabeled_files]
-    get_stats_from_comm(corpus, words, labels, features, mode, False, anno)
-    features_to_id = create_feature_dict(features, feature_thresh)
-    word_to_id = create_lex_dict(words)
-    label_to_id = create_lex_dict(labels)
-    print 'feature size:', len(features_to_id), 'lexical size:', len(word_to_id), 'label size:', len(label_to_id)
-    return features_to_id, word_to_id, label_to_id
-
-
-def get_stats_from_comm(corpus, words, labels, features, mode, labeled=True, anno=None):
-    get_label = lambda sentences, pos: [tok[pos] 
-            for sentence in sentences 
-            for tok in sentence
-            ]
-    for comm in corpus:
-        sentences = read_concrete(comm, not labeled, mode, anno)
-        words += get_label(sentences, 1)
-        if labeled:
-            labels += get_label(sentences, -1)
-        if len(sentences[0][0]) == 3:
-            fields_template = 'w r y'
-        elif len(sentences[0][0]) == 4:
-            fields_template = 'w r s y'
-        elif len(sentences[0][0]) == 5:
-            fields_template = 'w r s p y'
-        if fields_template == 'w r y':
-            features.extend(feature_extractor(readiter(sentence, fields_template.split(' ')), templates=local_templates) for sentence in sentences)
-        else:
-            features.extend(feature_extractor(readiter(sentence, fields_template.split(' '))) for sentence in sentences)
 
 def create_feature_dict(features, feature_thresh):   
     feature_to_freq = defaultdict(int)
@@ -505,96 +384,13 @@ def create_lex_dict(words):
     return word_to_id
 
 
-def write_data_concrete(input_tar, output_dir, predictions):
-    writer = CommunicationWriterTGZ()
-    writer.open(os.path.join(output_dir, 'golden_horse_'+os.path.basename(input_tar)))
-    for i, (comm, fn) in enumerate(get_files(input_tar)):
-	prediction = predictions[i]
-	update_concrete_file_write(comm, fn, writer, prediction)
-    writer.close()
-
-
-def update_concrete(comm, prediction):
-    toolname = 'Violet_NER_annotator'
-    timestamp = int(time.time())
-    mention_list = []
-    for section in comm.sectionList:
-	for sentence in section.sentenceList:
-	    start = 0
-	    pred_ner_tags = []
-	    tknzation = sentence.tokenization
-	    in_NE = False
-	    ne_type = ''
-	    tokenization_id = None
-	    token_idx_list = []
-	    ne_text = []
-	    for i, tk in enumerate(tknzation.tokenList.tokenList):
-		pred_tags = ' '.join(prediction[start:start+len(tk.text)])
-		if in_NE:
-			for i, tag in enumerate(prediction[start:start+len(tk.text)]):
-				if tag != 'I-' + ne_type:
-					if i != 0:
-						token_idx_list.append(i)
-						ne_text.append(tk.text)
-					entity_tokens = TokenRefSequence(tokenizationId=tokenization_id, tokenIndexList=token_idx_list)
-					e_type, p_type = ne_type.split('.') if '.' in ne_type else (ne_type, 'NAM')
-					#print token_idx_list, ne_text, e_type, p_type
-					e_mention = EntityMention(uuid=generate_UUID(), tokens=entity_tokens, entityType=e_type, phraseType=p_type, text=''.join(ne_text))
-					mention_list.append(e_mention)
-					tokenization_id = None
-					token_idx_list = []
-					ne_text = []
-					ne_type = ''
-					in_NE = False
-					break
-		if not in_NE and 'B-' in pred_tags:
-			#print 'not in NE,', prediction[start:start+len(tk.text)]
-			in_NE = True
-			for tag in prediction[start:start+len(tk.text)]:
-				#print tag
-				if tag.startswith('B-'):
-					ne_type = tag.split('-')[1]
-					tokenization_id = tknzation.uuid
-					token_idx_list.append(i)
-					ne_text.append(tk.text)
-					break
-			#print token_idx_list, ne_text
-			if prediction[start+len(tk.text)-1] != 'I-'+ne_type:
-				entity_tokens = TokenRefSequence(tokenizationId=tokenization_id, tokenIndexList=token_idx_list)
-				e_type, p_type = ne_type.split('.') if '.' in ne_type else (ne_type, 'NAM')
-				e_mention = EntityMention(uuid=generate_UUID(), tokens=entity_tokens,entityType=e_type,phraseType=p_type,text=''.join(ne_text))
-				mention_list.append(e_mention)
-				tokenization_id = None
-				token_idx_list = []
-				ne_text = []
-				ne_type = ''
-				in_NE = False
-		start += len(tk.text)
-		pred_ner_tags.append(TaggedToken(tokenIndex=i, tag=pred_tags))
-	    pner_tokentagging = TokenTagging(
-		    taggingType=PRED_TAG,
-		    taggedTokenList=pred_ner_tags,
-		    metadata=AnnotationMetadata(tool=toolname, timestamp=timestamp),
-		    uuid=generate_UUID())
-	    tknzation.tokenTaggingList.append(pner_tokentagging)
-    entity_list = [Entity(uuid=generate_UUID(),type=mention.entityType,canonicalName=mention.text,mentionIdList=[mention.uuid]) for mention in mention_list]
-    entity_mention_set = EntityMentionSet(uuid=generate_UUID(),metadata=AnnotationMetadata(tool=toolname, timestamp=timestamp),mentionList=mention_list)
-    entity_set = EntitySet(uuid=generate_UUID(),metadata=AnnotationMetadata(tool=toolname, timestamp=timestamp),entityList=entity_list,mentionSetId=entity_mention_set.uuid)
-    comm.entityMentionSetList = [entity_mention_set]
-    comm.entitySetList = [entity_set]
-
-
-def update_concrete_file_write(comm, filename, writer, prediction):
-    update_concrete(comm, prediction)
-    writer.write(comm, filename)
-
-
 def error_analysis(words, preds, golds, idx_to_word):
 	print 'error analysis!!!'
 	for w_1sent, p_1sent, g_1sent in zip(words, preds, golds):
 	    for w, p, g in zip(w_1sent, p_1sent, g_1sent):
-		if p != g:
-			print idx_to_word[w], p, g
+		#if p != g:
+		print idx_to_word[w[0]], p, g
+            print ''
 	print 'end of error analysis!!!!'
 
 # utilities for evaluation:
@@ -649,13 +445,27 @@ def eval_ner(pred, gold):
         agg_measure[1] += recall
         agg_measure[2] += F1
         print k+':', v[0], '\t', v[1], '\t', v[2], '\t', prec, '\t', recall, '\t', F1
-    agg_measure = [v/len(eval_dict) for v in agg_measure]
+    agg_measure = [v/len(eval_dict) if len(eval_dict) != 0 else 0.0 for v in agg_measure]
     print 'Macro average:', '\t', agg_measure[0], '\t', agg_measure[1], '\t', agg_measure[2]
     prec = float(agg_counts[0])/agg_counts[1] if agg_counts[1] != 0 else 0.0
     recall = float(agg_counts[0])/agg_counts[2] if agg_counts[2] != 0 else 0.0
     F1 = 2*prec*recall/(prec+recall) if prec != 0 and recall != 0 else 0.0
     print 'Micro average:', agg_counts[0], '\t', agg_counts[1], '\t', agg_counts[2], '\t', prec, '\t', recall, '\t', F1 
     return {'p': prec, 'r': recall, 'f1': F1}
+
+
+
+def quick_sample(fn):
+    with cs.open(fn, 'r', encoding='utf-8') as f, cs.open(fn+'.small', 'w', encoding='utf-8') as outf:
+        corpus = f.read().strip().split('\n\n')
+        print type(corpus)
+        print corpus[1]
+        samples = random.sample(corpus, 800)
+        for spl in samples:
+            outf.write(spl+'\n\n')
+        #for item in f.read().strip().split('\n\n'):
+         #   print item
+
 
 
 if __name__ == '__main__':

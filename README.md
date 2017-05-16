@@ -7,7 +7,7 @@ The original and revised annotated data are both made available in the data/ dir
 
 We composed updated results of our models on the revised version of the data in the supplementary material: http://www.cs.jhu.edu/~npeng/papers/golden_horse_supplement.pdf. If you want to compare with our models on the revised data, please refer to this supplementary material. Thanks! 
 
-If you use the revised version, please kindly add the citation of the following bibtex to the citation of our original paper:
+If you use the revised dataset, please kindly cite the following bibtex in addition to the citation of our papers:
 
 @article{HeS16,  
 author={Hangfeng He and Xu Sun},  
@@ -19,21 +19,37 @@ year={2016}
 
 # golden-horse
 
-The implementation of the paper:
+The implementation of the papers:
 
 **Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings**  
 Nanyun Peng and Mark Dredze  
 *Conference on Empirical Methods in Natural Language Processing (EMNLP)*, 2015  
+
+and  
+
+**Improving Named Entity Recognition for Chinese Social Media  
+with Word Segmentation Representation Learning**  
+Nanyun Peng and Mark Dredze  
+*Annual Meeting of the Association for Computational Linguistics (ACL)*, 2016  
 
 If you use the code, please kindly cite the following bibtex:
 
 @inproceedings{peng2015ner,  
 title={Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings.},  
 author={Peng, Nanyun and Dredze, Mark},  
-booktitle={EMNLP},  
+booktitle={Processings of the Conference on Empirical Methods in Natural Language Processing (EMNLP)},  
 pages={548–-554},  
 year={2015}  
-}
+}  
+
+@inproceedings{peng2016improving,  
+title={Improving named entity recognition for Chinese social media with word segmentation representation learning},  
+author={Peng, Nanyun and Dredze, Mark},  
+booktitle={Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (ACL)},  
+volume={2},  
+pages={149--155},  
+year={2016}  
+}  
 
 ## Dependencies:
 This is an theano implementation; it requires installation of python module:  
@@ -43,11 +59,17 @@ Both of them can be simply installed by pip moduleName.
 
 The lstm layer was adapted from http://deeplearning.net/tutorial/lstm.html and the feature extraction part was adapted from crfsuite: http://www.chokkan.org/software/crfsuite/
 
-## A sample command for the training:
-python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER.conll.train --valid_data data/weiboNER.conll.dev --test_data data/weiboNER.conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type charpos --save_model_param weibo_best_parameters --eval_test false
+## running the EMNLP_15 experiments:
+### Sample commands for the training:
+python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER.conll.train --valid_data data/weiboNER.conll.dev --test_data data/weiboNER.conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type charpos --save_model_param weibo_best_parameters --emb_init true --eval_test False  
 
-## A sample command for running the test:
+python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER_2nd_conll.train --valid_data data/weiboNER_2nd_conll.dev --test_data data/weiboNER_2nd_conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type char --save_model_param weibo_best_parameters --emb_init true --eval_test False
+
+### Sample commands for running the test:
 python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best_parameters
+
+## A sample command for running the ACL_16 experiments:
+python theano_src/jointSegNER.py --cws_train_path ../data/icwb2-data/training/pku_training.utf8 --cws_valid_path ../data/icwb2-data/gold/pku_test_gold.utf8 --cws_test_path ../data/icwb2-data/gold/pku_test_gold.utf8 --ner_train_path data/weiboNER_2nd_conll.train --ner_valid_path data/weiboNER_2nd_conll.dev --ner_test_path data/weiboNER_2nd_conll.test --emb_init file --emb_file embeddings/weibo_charpos_vectors  --lr 0.05 --train_mode alternative --nepochs 30 --cws_joint_weight 0.7  
 
 In the above example, the output will be written at output_dir/weiboNER.conll.test.prediction. If you also want to see the evaluation (you must have labeled test data), you can add flag --eval_test True.
 
