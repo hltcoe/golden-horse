@@ -63,16 +63,17 @@ The lstm layer was adapted from http://deeplearning.net/tutorial/lstm.html and t
 ### Sample commands for the training:
 python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER.conll.train --valid_data data/weiboNER.conll.dev --test_data data/weiboNER.conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type charpos --save_model_param weibo_best_parameters --emb_init true --eval_test False  
 
-python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER_2nd_conll.train --valid_data data/weiboNER_2nd_conll.dev --test_data data/weiboNER_2nd_conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type char --save_model_param weibo_best_parameters --emb_init true --eval_test False
+python theano_src/crf_ner.py --nepochs 30 --neval_epochs 1 --training_data data/weiboNER_2nd_conll.train --valid_data data/weiboNER_2nd_conll.dev --test_data data/weiboNER_2nd_conll.test --emb_file embeddings/weibo_charpos_vectors --emb_type char --save_model_param weibo_best_parameters --emb_init true --eval_test False  
+
+In the above example, the output will be written at output_dir/weiboNER.conll.test.prediction. If you also want to see the evaluation (you must have labeled test data), you can add flag --eval_test True.  
 
 ### Sample commands for running the test:
-python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best_parameters
+python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best_parameters  
 
-## A sample command for running the ACL_16 experiments:
-python theano_src/jointSegNER.py --cws_train_path ../data/icwb2-data/training/pku_training.utf8 --cws_valid_path ../data/icwb2-data/gold/pku_test_gold.utf8 --cws_test_path ../data/icwb2-data/gold/pku_test_gold.utf8 --ner_train_path data/weiboNER_2nd_conll.train --ner_valid_path data/weiboNER_2nd_conll.dev --ner_test_path data/weiboNER_2nd_conll.test --emb_init file --emb_file embeddings/weibo_charpos_vectors  --lr 0.05 --train_mode alternative --nepochs 30 --cws_joint_weight 0.7  
+## running the ACL_16 experiments:
+python theano_src/jointSegNER.py --cws_train_path ../data/icwb2-data/training/pku_training.utf8 --cws_valid_path ../data/icwb2-data/gold/pku_test_gold.utf8 --cws_test_path ../data/icwb2-data/gold/pku_test_gold.utf8 --ner_train_path data/weiboNER_2nd_conll.train --ner_valid_path data/weiboNER_2nd_conll.dev --ner_test_path data/weiboNER_2nd_conll.test --emb_init file --emb_file embeddings/weibo_charpos_vectors  --lr 0.05 --nepochs 30 --train_mode joint --cws_joint_weight 0.7 --m1_wemb1_dropout_rate 0.1   
 
-In the above example, the output will be written at output_dir/weiboNER.conll.test.prediction. If you also want to see the evaluation (you must have labeled test data), you can add flag --eval_test True.
-
+The last three parameters and the learning rate can be tuned. In our experiments, we found that for named mention, the best combination is (joint, 0.7, 0.1); for nonimal mention, the best combination is (alternative, 1.0, 0.1)
 
 ## Data
 We noticed that several factors could affect the replicatability of experiments:  
