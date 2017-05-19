@@ -71,7 +71,7 @@ In the above example, the output will be written at output_dir/weiboNER.conll.te
 python theano_src/crf_ner.py --test_data data/weiboNER.conll.test --only_test true --output_dir data/ --save_model_param weibo_best_parameters  
 
 ## running the ACL_16 experiments:
-python theano_src/jointSegNER.py --cws_train_path ../data/icwb2-data/training/pku_training.utf8 --cws_valid_path ../data/icwb2-data/gold/pku_test_gold.utf8 --cws_test_path ../data/icwb2-data/gold/pku_test_gold.utf8 --ner_train_path data/weiboNER_2nd_conll.train --ner_valid_path data/weiboNER_2nd_conll.dev --ner_test_path data/weiboNER_2nd_conll.test --emb_init file --emb_file embeddings/weibo_charpos_vectors  --lr 0.05 --nepochs 30 --train_mode joint --cws_joint_weight 0.7 --m1_wemb1_dropout_rate 0.1   
+python theano_src/jointSegNER.py --cws_train_path data/pku_training.utf8 --cws_valid_path data/pku_test_gold.utf8 --cws_test_path data/pku_test_gold.utf8 --ner_train_path data/weiboNER_2nd_conll.train --ner_valid_path data/weiboNER_2nd_conll.dev --ner_test_path data/weiboNER_2nd_conll.test --emb_init file --emb_file embeddings/weibo_charpos_vectors --lr 0.05 --nepochs 30 --train_mode joint --cws_joint_weight 0.7 --m1_wemb1_dropout_rate 0.1
 
 The last three parameters and the learning rate can be tuned. In our experiments, we found that for named mention, the best combination is (joint, 0.7, 0.1); for nonimal mention, the best combination is (alternative, 1.0, 0.1)
 
