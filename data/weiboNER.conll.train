@@ -5870,12 +5870,12 @@
 好	O
 又	O
 深	O
-���	O
-���	O
-���	O
-���	O
-���	O
-���	O
+�	O
+�	O
+�	O
+�	O
+�	O
+�	O
 
 帮	O
 朋	O
@@ -10872,12 +10872,12 @@
 一	O
 整	O
 天	O
-���	O
-���	O
-���	O
-���	O
-���	O
-���	O
+�	O
+�	O
+�	O
+�	O
+�	O
+�	O
 
 坐	O
 车	O
@@ -15170,7 +15170,7 @@
 庆	I-GPE.NAM
 校	B-ORG.NOM
 园	I-ORG.NOM
-跳	O
+跳	I-ORG.NOM
 蚤	I-ORG.NOM
 市	I-ORG.NOM
 场	I-ORG.NOM
@@ -21470,7 +21470,7 @@ I	O
 你	O
 这	O
 个	O
-不	O
+不	B-PER.NOM
 孝	I-PER.NOM
 子	I-PER.NOM
 哈	O
@@ -21986,8 +21986,8 @@ s	O
 节	O
 #	O
 祝	O
-小	O
-编	I-GPE.NAM
+小	B-PER.NOM
+编	I-PER.NOM
 天	O
 天	O
 开	O
@@ -21997,8 +21997,8 @@ s	O
 祝	O
 贵	O
 博	O
-粉	I-GPE.NAM
-丝	I-GPE.NAM
+粉	B-PER.NOM
+丝	I-PER.NOM
 多	O
 到	O
 爆	O
@@ -22011,8 +22011,8 @@ s	O
 ，	O
 感	O
 谢	O
-小	O
-编	I-GPE.NAM
+小	B-PER.NOM
+编	I-PER.NOM
 不	O
 断	O
 将	O
@@ -24536,7 +24536,7 @@ V	O
 痞	B-PER.NAM
 子	I-PER.NAM
 -	O
-浪	I-PER.NAM
+浪	B-PER.NAM
 子	I-PER.NAM
 有	O
 人	O
@@ -28614,12 +28614,12 @@ j	O
 海	B-ORG.NAM
 淀	I-ORG.NAM
 的	O
-彩	O
-翼	O
+彩	B-ORG.NAM
+翼	I-ORG.NAM
 儿	I-ORG.NAM
 童	I-ORG.NAM
-美	O
-术	O
+美	I-ORG.NAM
+术	I-ORG.NAM
 :	O
 /	O
 /	O
@@ -30977,7 +30977,7 @@ Y	O
 通	O
 公	B-PER.NOM
 司	I-PER.NOM
-员	O
+员	I-PER.NOM
 工	I-PER.NOM
 状	O
 态	O
@@ -30994,7 +30994,7 @@ Y	O
 逼	O
 公	B-ORG.NOM
 司	I-ORG.NOM
-员	B-PER.NOM
+员	I-PER.NOM
 工	I-PER.NOM
 状	O
 态	O
@@ -31277,8 +31277,8 @@ x	O
 谁	O
 家	O
 的	O
-孩	I-PER.NAM
-子	I-PER.NAM
+孩	B-PER.NOM
+子	I-PER.NOM
 c	O
 c	O
 :	O
@@ -31332,10 +31332,10 @@ c	O
 /	O
 /	O
 @	O
-R	O
-i	O
-c	O
-k	O
+R	B-PER.NAM
+i	I-PER.NAM
+c	I-PER.NAM
+k	I-PER.NAM
 警	I-PER.NAM
 长	I-PER.NAM
 :	O
@@ -35045,7 +35045,7 @@ n	O
 晨	O
 读	O
 班	O
-宣	I-PER.NAM
+宣	B-PER.NAM
 传	I-PER.NAM
 委	I-PER.NAM
 员	I-PER.NAM
@@ -35118,7 +35118,7 @@ s	O
 橡	O
 皮	O
 筋	O
-杀	I-PER.NAM
+杀	B-PER.NAM
 手	I-PER.NAM
 针	O
 米	O
@@ -35764,8 +35764,8 @@ n	O
 琳	O
 Y	O
 @	O
-范	O
-儿	O
+范	B-PER.NAM
+儿	I-PER.NAM
 姐	I-PER.NAM
 0	O
 0	O
@@ -35785,7 +35785,7 @@ _	O
 @	O
 Z	O
 z	O
-傻	I-PER.NAM
+傻	B-PER.NAM
 丫	I-PER.NAM
 头	I-PER.NAM
 
@@ -42896,8 +42896,8 @@ N	O
 里	I-GPE.NAM
 社	I-GPE.NAM
 区	I-GPE.NAM
-居	O
-民	I-GPE.NAM
+居	B-PER.NOM
+民	I-PER.NOM
 王	B-PER.NAM
 宝	I-PER.NAM
 义	I-PER.NAM
@@ -48009,8 +48009,8 @@ s	O
 辰	I-PER.NAM
 会	O
 亲	O
-妈	I-PER.NAM
-妈	I-PER.NAM
+妈	B-PER.NOM
+妈	I-PER.NOM
 了	O
 ，	O
 纪	O
@@ -49248,7 +49248,7 @@ M	O
 剑	O
 网	O
 3	O
-客	I-PER.NOM
+客	B-PER.NOM
 户	I-PER.NOM
 服	O
 务	O
@@ -53302,7 +53302,7 @@ D	O
 。	O
 四	O
 个	O
-人	I-PER.NOM
+人	B-PER.NOM
 吃	O
 完	O
 的	O
@@ -67960,11 +67960,11 @@ z	O
 博	I-GPE.NAM
 镇	I-GPE.NAM
 的	O
-古	O
+古	B-GEP.NAM
 城	I-GPE.NAM
 塞	I-GPE.NAM
-遗	O
-迹	O
+遗	I-GPE.NAM
+迹	I-GPE.NAM
 。	O
 波	B-GPE.NAM
 城	I-GPE.NAM
@@ -69372,9 +69372,9 @@ d	O
 a	O
 鱼	O
 @	O
-甘	O
-主	O
-力	O
+甘	B-PER.NAM
+主	I-PER.NAM
+力	I-PER.NAM
 小	I-PER.NAM
 姐	I-PER.NAM
 [	O
@@ -71351,8 +71351,8 @@ P	O
 款	O
 	O
 水	O
-宝	I-GPE.NAM
-宝	I-GPE.NAM
+宝	B-PER.NOM
+宝	I-PER.NOM
 系	O
 列	O
 一	O
