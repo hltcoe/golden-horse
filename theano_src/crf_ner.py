@@ -8,7 +8,7 @@ import time
 import theano, numpy
 from neural_lib import StackConfig, ArrayInit
 from neural_architectures import plainOrderOneCRF
-from sighan_ner import loaddata, get_data, eval_ner, error_analysis
+from sighan_ner import loaddata, get_data, eval_ner, error_analysis, write_predictions
 from train_util import dict_from_argparse, shuffle, conv_data, convert_id_to_word, add_arg, add_arg_to_L, read_matrix_from_file, write_matrix_to_file, create_circuit, save_parameters, load_params, batch_run_func 
 from train_util import sgd, adadelta, rmsprop  
 
@@ -119,6 +119,7 @@ def main(_args):
     if _args.only_test:
         tester = Tester(_args)
         res_test, pred_test = tester.run(_args)
+        write_predictions(_args.output_dir, _args.test_data, pred_test)
         exit(0)
 
     print "loading data from:", _args.training_data, _args.valid_data, _args.test_data

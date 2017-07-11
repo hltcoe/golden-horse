@@ -116,6 +116,12 @@ def load_dicts(dict_file):
     dict_feature, dict_lex, dict_y = pickle.load(open(dict_file, 'rb'))
     return dict_feature, dict_lex, dict_y
 
+def write_predictions(output_dir, filename, predict_test):
+    with cs.open(os.path.join(output_dir, os.path.basename(filename)+'.predictions'), 'w', encoding='utf-8') as outf:
+        for line in predict_test:
+            for tk in line:
+                outf.write(tk+'\n')
+            outf.write('\n')
 
 # Note: if feature_thresh < 0, means load the feature, lex and y dict.
 def loaddata(train_name, valid_name, test_name, feature_thresh=1, mode='char', anno=None, test_label=True):
