@@ -117,6 +117,7 @@ def load_dicts(dict_file):
     return dict_feature, dict_lex, dict_y
 
 def write_predictions(output_dir, filename, predict_test):
+    print 'writing predictions to', os.path.join(output_dir, os.path.basename(filename)+'.predictions')
     with cs.open(os.path.join(output_dir, os.path.basename(filename)+'.predictions'), 'w', encoding='utf-8') as outf:
         for line in predict_test:
             for tk in line:
@@ -185,7 +186,7 @@ def convdata(lines, dict_feature, dict_lex, dict_y, repre, anno, label=True):
         X = convdata_helper(chars, labels, repre, anno)
         #print 'conv data:', ' '.join(['-'.join(fld) for fld in X])
         sentences.append(X)
-    conll_feature_extract(sentences, dict_feature, dict_lex, dict_y, False, corpus_lex, corpus_y, corpus_feat)
+    conll_feature_extract(sentences, dict_feature, dict_lex, dict_y, not label, corpus_lex, corpus_y, corpus_feat)
     return [corpus_feat, corpus_lex, corpus_y]
 
 def get_data(fn, dict_feature, dict_lex, dict_y, repre, anno, has_label=True):
@@ -334,7 +335,7 @@ def conll_feature_extract(sentences_conll, features_to_id, word_to_id, label_to_
             print 'all oov!!!!'
             continue
         if no_label:
-            labels = []
+            labels = [0 for lb in get_label(sntc, -1)]
         else:
             labels = [label_to_id[lb] for lb in get_label(sntc, -1)]
         train_feat = []

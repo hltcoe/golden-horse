@@ -7,6 +7,8 @@ The original and revised annotated data are both made available in the data/ dir
 
 We composed updated results of our models on the revised version of the data in the supplementary material: http://www.cs.jhu.edu/~npeng/papers/golden_horse_supplement.pdf. If you want to compare with our models on the revised data, please refer to this supplementary material. Thanks! 
 
+Please note that the updated version provided
+
 If you use the revised dataset, please kindly cite the following bibtex in addition to the citation of our papers:
 
 @article{HeS16,  

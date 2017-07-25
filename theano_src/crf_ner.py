@@ -109,8 +109,11 @@ class Tester:
         _args.idx2label = dict((k, v) for v, k in cargs['label2idx'].iteritems())
         _args.idx2word = dict((k, v) for v, k in cargs['word2idx'].iteritems())
         _args.f_classify = cargs['f_classify']
-        groundtruth_test = convert_id_to_word(test_y, _args.idx2label)
+        if _args.eval_test:
+            groundtruth_test = convert_id_to_word(test_y, _args.idx2label)
 
+        else:
+            groundtruth_test = [[] for elem in test_y]
         res_test, pred_test = predict(test_feat, test_lex, _args, groundtruth_test)
         return (res_test, pred_test)
 
