@@ -97,5 +97,3 @@ Note: the data we provide contains both named and nominal mentions, you can get 
 
 ## Data License
 The annotations in this repository are released according to the [Creative Commons Attribution-ShareAlike 3.0 Unported License (CC BY-SA 3.0)](https://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License). The messages themselves are selected from [Weibo](https://www.weibo.com/) and follow Weibo's terms of service.
-
-https://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License
