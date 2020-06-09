@@ -11,7 +11,7 @@ We thank Hangfeng He for his contribution to the major cleanup and revision of t
 
 The original and revised annotated data are both made available in the data/ directory, with prefixes weiboNER.conll and weiboNER_2nd_conll, respectively.
 
-We composed updated results of our models on the revised version of the data in the supplementary material: http://www.cs.jhu.edu/~npeng/papers/golden_horse_supplement.pdf. If you want to compare with our models on the revised data, please refer to this supplementary material. Thanks! 
+We include updated results of our models on the revised version of the data in supplementary material: [golden_horse_supplement.pdf](golden_horse_supplement.pdf). If you want to compare with our models on the revised data, please refer to this supplementary material. Thanks! 
 
 Please note that the updated version provided
 
@@ -43,11 +43,12 @@ Nanyun Peng and Mark Dredze
 If you use the code, please kindly cite the following bibtex:
 
 @inproceedings{peng2015ner,  
-title={Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings.},  
+title={Named Entity Recognition for Chinese Social Media with Jointly Trained Embeddings},  
 author={Peng, Nanyun and Dredze, Mark},  
 booktitle={Processings of the Conference on Empirical Methods in Natural Language Processing (EMNLP)},  
 pages={548–-554},  
-year={2015}  
+year={2015},
+File={https://www.aclweb.org/anthology/D15-1064/},
 }  
 
 @inproceedings{peng2016improving,  
@@ -56,7 +57,8 @@ author={Peng, Nanyun and Dredze, Mark},
 booktitle={Proceedings of the 54th Annual Meeting of the Association for Computational Linguistics (ACL)},  
 volume={2},  
 pages={149--155},  
-year={2016}  
+year={2016},
+File={https://www.aclweb.org/anthology/P16-2025/},
 }  
 
 ## Dependencies:
