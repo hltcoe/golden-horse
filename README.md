@@ -1,4 +1,10 @@
-# Important update of the data
+# Chinese Named Entity Recognition for Social Media
+This repository contains:
+1) Data: Named Entity Recognition (NER) for Chinese Social Media (Weibo). This dataset contains messages selected from Weibo and annotated according to the DEFT ERE annotation guidelines. Annotations include both name and nominal mentions. The corpus contains 1,890 messages sampled from Weibo between November 2013 and December 2014.
+
+2) golden-horse: A neural based NER tool for Chinese Social Media.
+
+## Important update of the data
 
 We fixed some inconsistancies in the data, especially the annotations for the nominal mentions.
 We thank Hangfeng He for his contribution to the major cleanup and revision of the annotations.
@@ -86,3 +92,8 @@ We noticed that several factors could affect the replicatability of experiments:
 To enhance the replicatability of our experiments, we provide the original data in conll format at data/weiboNER.conll.(train/dev/test). In addition, we also provide files including all the features and the char-positional transformation we used in our experiments in data/crfsuite.weiboNER.charpos.conll.(train/dev/test), as well as the pre-trained char and char-positional embeddings.
 
 Note: the data we provide contains both named and nominal mentions, you can get the dataset with only named entities by simply filtering out the nominal mentions.
+
+## Data License
+The annotations in this repository are released according to the [Creative Commons Attribution-ShareAlike 3.0 Unported License (CC BY-SA 3.0)](https://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License). The messages themselves are selected from [Weibo](https://www.weibo.com/) and follow Weibo's terms of service.
+
+https://en.wikipedia.org/wiki/Wikipedia:Text_of_Creative_Commons_Attribution-ShareAlike_3.0_Unported_License
